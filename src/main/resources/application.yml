@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: gasstationmanagement
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    

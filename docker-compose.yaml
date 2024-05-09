@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16
+    container_name: db_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: stationservice
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./src/main/resources/db/migration/V1__create_table.sql:/docker-entrypoint-initdb.d/V1__create_table.sql
+    restart: always
+  app:
+    build: .
+    depends_on:
+      - db
+    container_name: app_stationservice
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/stationservice
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+    ports:
+      - "8080:8080"
