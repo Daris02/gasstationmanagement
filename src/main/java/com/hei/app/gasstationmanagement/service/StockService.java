@@ -26,11 +26,11 @@ public class StockService {
         return repository.save(toSave);
     }
 
-    public List<Stock> getStocks(Integer stationId, Integer productId) {
-        return  null;
+    public List<Stock> findAllByStationId(Integer stationId) {
+        return repository.findAll(stationId);
     }
 
-    public Stock getByStationId(Integer stationId, Integer productId) {
-        return repository.getByStationId(stationId, productId);
+    public Stock findAllByStationAndProduct(Integer stationId, Integer productId) {
+        return repository.findAllByStationAndProduct(stationId, productId);
     }
 }
