@@ -5,6 +5,7 @@ import com.hei.app.gasstationmanagement.repository.StockRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -21,6 +22,15 @@ public class StockService {
     }
 
     public Stock save(Stock toSave) {
+        toSave.setDatetime(Instant.now());
         return repository.save(toSave);
+    }
+
+    public List<Stock> getStocks(Integer stationId, Integer productId) {
+        return  null;
+    }
+
+    public Stock getByStationId(Integer stationId, Integer productId) {
+        return repository.getByStationId(stationId, productId);
     }
 }

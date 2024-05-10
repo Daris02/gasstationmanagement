@@ -14,14 +14,13 @@ import java.util.List;
 public class StockMoveController {
     private final StockMoveService service;
 
-    @GetMapping({"", "/"})
-    public List<StockMove> getAll() {
-        return service.getAll();
-    }
-
-    @GetMapping("/{id}")
-    public StockMove getById(@PathVariable("id") Integer id) {
-        return service.getById(id);
+    @GetMapping( "/{stationId}")
+    public List<StockMove> getAll(
+            @PathVariable("stationId") Integer stationId,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate
+    ) {
+        return service.getAll(stationId, startDate, endDate);
     }
 
     @PostMapping({"", "/"})

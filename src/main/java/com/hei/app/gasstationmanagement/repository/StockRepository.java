@@ -46,8 +46,8 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
     public Stock save(Stock toSave) {
         Connection connection = null;
         Statement statement = null;
-        String insertQuery = "INSERT INTO stock (stationId, productId, quantity, evaporationRate) VALUES (" +
-            "( " + toSave.getStation().getId() + ", " + toSave.getProduct().getId() + ", " + toSave.getQuantity() + "," + toSave.getEvaporationRate() + ");";
+        String insertQuery = "INSERT INTO stock (stationId, productId, quantity, datetime, evaporationRate) VALUES " +
+            "( " + toSave.getStation().getId() + ", " + toSave.getProduct().getId() + ", " + toSave.getQuantity() + ", '" + toSave.getDatetime() + "', " + toSave.getEvaporationRate() + ");";
 
         try {
             connection = ConnectionDB.createConnection();
@@ -60,6 +60,42 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
             throw new RuntimeException(e);
         } finally {
             try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public Stock getByStationId(Integer stationId, Integer productId) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = ConnectionDB.createConnection();
+            statement = connection.createStatement();
+
+            String selectQuery = "SELECT * FROM \"stock\"" +
+                    "WHERE productid = '" + productId + "' " +
+                    "AND stationid = '" + stationId + "' " +
+                    "ORDER BY datetime DESC " +
+                    "LIMIT 1 ;";
+
+            resultSet = statement.executeQuery(selectQuery);
+            Stock responseSQL = null;
+
+            while (resultSet.next()) {
+                responseSQL = mapResultSetToEntity(resultSet);
+            }
+            return responseSQL;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
                 if (statement != null) statement.close();
                 if (connection != null) connection.close();
             } catch (SQLException e) {

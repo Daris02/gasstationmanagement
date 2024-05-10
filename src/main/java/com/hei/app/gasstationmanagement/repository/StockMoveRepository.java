@@ -14,6 +14,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 @AllArgsConstructor
@@ -47,8 +49,8 @@ public class StockMoveRepository extends AutoCRUD<StockMove, Integer> {
     public StockMove save(StockMove toSave) {
         Connection connection = null;
         Statement statement = null;
-        String insertQuery = "INSERT INTO stock (stationId, productId, amount, type, ismoney) VALUES (" +
-            "( " + toSave.getStation().getId() + ", " + toSave.getProduct().getId() + ", " + toSave.getAmount() + "," + toSave.getType() + "," + toSave.getIsMoney() + ");";
+        String insertQuery = "INSERT INTO stockmove (stationId, productId, amount, type, datetime, ismoney) VALUES " +
+            "( " + toSave.getStation().getId() + ", " + toSave.getProduct().getId() + ", " + toSave.getAmount() + ", '" + toSave.getType() + "', '" + toSave.getDatetime() + "', "+ toSave.getIsMoney() + ");";
 
         try {
             connection = ConnectionDB.createConnection();
@@ -56,11 +58,42 @@ public class StockMoveRepository extends AutoCRUD<StockMove, Integer> {
             statement = connection.createStatement();
             statement.executeUpdate(insertQuery);
             return toSave;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public List<StockMove> findAll(Integer stationId) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        List<StockMove> stockMoves = new ArrayList<>();
+
+        try {
+            connection = ConnectionDB.createConnection();
+            statement = connection.createStatement();
+
+            String selectQuery = "SELECT * FROM \"stockmove\"" +
+                    "WHERE stationid = " + stationId + ";";
+            resultSet = statement.executeQuery(selectQuery);
+
+            while (resultSet.next()) {
+                stockMoves.add(mapResultSetToEntity(resultSet));
+            }
+            return stockMoves;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {
+                if (resultSet != null) resultSet.close();
                 if (statement != null) statement.close();
                 if (connection != null) connection.close();
             } catch (SQLException e) {
