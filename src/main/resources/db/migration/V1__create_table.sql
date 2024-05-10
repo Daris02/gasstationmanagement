@@ -47,13 +47,7 @@ INSERT INTO "product" (name, price) VALUES
     ('gasoil', 4900),   -- id.2
     ('petrol', 2130);   -- id.3
 
--- -- ADD FIRST SUPPLY
-INSERT INTO "stockmove" (stationId, type, amount, productId) VALUES
-    (1, 'entry', 100000, 1),
-    (1, 'entry', 80000, 2),
-    (1, 'entry', 50000, 3);
-
 INSERT INTO "stock" (stationId, quantity, evaporationRate, productId) VALUES
-    (1, 100000, 100, 1),
-    (1, 80000, 50, 2),
-    (1, 50000, 10, 3);
+    (1, 0, 100, 1),
+    (1, 0, 50, 2),
+    (1, 0, 10, 3);

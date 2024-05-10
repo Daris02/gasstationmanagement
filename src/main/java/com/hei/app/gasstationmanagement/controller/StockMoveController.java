@@ -6,8 +6,6 @@ import com.hei.app.gasstationmanagement.service.StockMoveService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @AllArgsConstructor
 @RequestMapping("/stockmoves")
@@ -15,12 +13,19 @@ public class StockMoveController {
     private final StockMoveService service;
 
     @GetMapping( "/{stationId}")
-    public List<StockMove> getAll(
+    public Object getAll(
             @PathVariable("stationId") Integer stationId,
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate
     ) {
-        return service.getAll(stationId, startDate, endDate);
+        return service.getAllWithDate(stationId, startDate, endDate);
+    }
+
+    @GetMapping( "/simple/{stationId}")
+    public Object getAll(
+            @PathVariable("stationId") Integer stationId
+    ) {
+        return service.getAllStockMoves(stationId);
     }
 
     @PostMapping({"", "/"})
