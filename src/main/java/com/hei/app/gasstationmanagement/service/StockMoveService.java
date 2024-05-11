@@ -2,6 +2,8 @@ package com.hei.app.gasstationmanagement.service;
 
 import com.hei.app.gasstationmanagement.Exception.QuantityExcessExcpetion;
 import com.hei.app.gasstationmanagement.config.DefaultValue;
+import com.hei.app.gasstationmanagement.model.Entity.Product;
+import com.hei.app.gasstationmanagement.model.Entity.Station;
 import com.hei.app.gasstationmanagement.model.Entity.Stock;
 import com.hei.app.gasstationmanagement.model.Entity.StockMove;
 import com.hei.app.gasstationmanagement.repository.StockMoveRepository;
@@ -22,8 +24,65 @@ public class StockMoveService {
     private final StockMoveRepository repository;
     private final StockService stockService;
     private final ProductService productService;
+    private final StationService stationService;
 
-    public Object getAllWithDate(Integer stationId, String startDate, String endDate) {
+    public Object getAll() {
+        List<Station> allStations = stationService.getAll();
+        List<StockMove> allStockMoves = repository.findAll();
+        List<Map<String, Object>> respones = new ArrayList<>();
+
+        for (Station station : allStations) {
+            Map<String, Object> result = new HashMap<>();
+
+            for (StockMove move : allStockMoves) {
+                List<Map<String, Object>> allList = getAllWithDate(station.getId(), null, null);
+                Double essenceQte = 0.0;
+                Double gasoilQte = 0.0;
+                Double petrolQte = 0.0;
+                Double essenceRestant = 0.0;
+                Double gasoilRestant = 0.0;
+                Double petrolRestant = 0.0;
+                Product product = move.getProduct();
+
+                result.put("ID Station", move.getStation().getId());
+                result.put("Montant essence", productService.getById(1).getPrice());
+                result.put("Montant gasoil", productService.getById(2).getPrice());
+                result.put("Montant petrol", productService.getById(3).getPrice());
+                
+                for (Map<String , Object> obj : allList) {
+                    switch (product.getId()) {
+                        case 1:
+                            essenceQte += amountConverter(move,(Double) obj.get("Qte Vendue Essence"), product.getPrice());
+                            break;
+                    
+                        case 2:
+                            gasoilQte += amountConverter(move, (Double) obj.get("Qte Vendue Gasoil"), product.getPrice());
+                            break;
+                    
+                        case 3:
+                            petrolQte += amountConverter(move, (Double) obj.get("Qte Vendue Pretrol"), product.getPrice());
+                            break;
+                    }
+                    if (obj==allList.get(allList.size()-1)) {
+                        essenceRestant = (Double) obj.get("Qte Restante Essence");
+                        gasoilRestant = (Double) obj.get("Qte Restante Gasoil");
+                        petrolRestant = (Double) obj.get("Qte Restante Pretrol");
+                    }
+                }
+                result.put("Qte Vendue Essence", essenceQte);
+                result.put("Qte Vendue Gasoil", gasoilQte);
+                result.put("Qte Vendue Pretrol", petrolQte);
+
+                result.put("Qte Restante Essence", essenceRestant);
+                result.put("Qte Restante Gasoil", gasoilRestant);
+                result.put("Qte Restante Pretrol", petrolRestant);
+            }
+            respones.add(result);
+        }
+        return respones;
+    }
+
+    public List<Map<String, Object>> getAllWithDate(Integer stationId, String startDate, String endDate) {
         List<StockMove> allStockMove = repository.findAll(stationId);
         List<StockMove> filteredStockMoves = new ArrayList<>();
         List<Stock> allStocks = getAllStocks(stationId);
@@ -63,18 +122,19 @@ public class StockMoveService {
 
             if (matchingStock.isPresent()) {
                 Stock stock = matchingStock.get();
+                result.put("id", stockMove.getId());
                 result.put("Date", dateFormatter(stockMove.getDatetime()));
-                result.put("Qte Ajout Essence", 0);
-                result.put("Qte Ajout Gasoil", 0);
-                result.put("Qte Ajout Pretrol", 0);
+                result.put("Qte Ajout Essence", 0.0);
+                result.put("Qte Ajout Gasoil", 0.0);
+                result.put("Qte Ajout Pretrol", 0.0);
 
-                result.put("Qte Vendue Essence", 0);
-                result.put("Qte Vendue Gasoil", 0);
-                result.put("Qte Vendue Pretrol", 0);
+                result.put("Qte Vendue Essence", 0.0);
+                result.put("Qte Vendue Gasoil", 0.0);
+                result.put("Qte Vendue Pretrol", 0.0);
 
-                result.put("Qte Restante Essence", 0);
-                result.put("Qte Restante Gasoil", 0);
-                result.put("Qte Restante Pretrol", 0);
+                result.put("Qte Restante Essence", 0.0);
+                result.put("Qte Restante Gasoil", 0.0);
+                result.put("Qte Restante Pretrol", 0.0);
                 response.add(updateMapResult(stock, stockMove, result));
             }
         }
@@ -155,6 +215,13 @@ public class StockMoveService {
                 break;
         }
         return map;
+    }
+
+    private double amountConverter(StockMove stockMove, double amount, double productPrice) {
+        if (stockMove.getIsMoney()) {
+            amount = stockMove.getAmount() / productPrice;
+        }
+        return (Math.round(amount * 100) / 100.0);
     }
 
     private String dateFormatter(Instant instant) {

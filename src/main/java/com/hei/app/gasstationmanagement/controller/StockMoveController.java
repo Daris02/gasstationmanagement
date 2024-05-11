@@ -5,6 +5,9 @@ import com.hei.app.gasstationmanagement.service.StockMoveService;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @AllArgsConstructor
@@ -32,4 +35,10 @@ public class StockMoveController {
     public StockMove create(@RequestBody StockMove stockMove) {
         return service.save(stockMove);
     }
+
+    @GetMapping({"", "/"})
+    public Object getAllMoving() {
+        return service.getAll();
+    }
+    
 }
