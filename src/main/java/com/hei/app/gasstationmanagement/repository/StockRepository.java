@@ -70,7 +70,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
         }
     }
 
-    public Stock findAllByStationAndProduct(Integer stationId, Integer productId) {
+    public Stock findByStationAndProduct(Integer stationId, Integer productId, String typeView) {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -82,7 +82,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
             String selectQuery = "SELECT * FROM \"stock\"" +
                     "WHERE productid = " + productId + " " +
                     "AND stationid = " + stationId + " " +
-                    "ORDER BY datetime DESC " +
+                    "ORDER BY datetime " + typeView + " " +
                     "LIMIT 1 ;";
 
             resultSet = statement.executeQuery(selectQuery);
