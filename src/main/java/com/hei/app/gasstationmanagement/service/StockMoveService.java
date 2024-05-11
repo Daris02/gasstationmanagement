@@ -82,12 +82,7 @@ public class StockMoveService {
     }
 
     private List<Stock> getAllStocks(Integer stationId) {
-        List<Stock> allStocks = stockService.findAllByStationId(stationId);
-        for (Stock stock : allStocks) {
-            long storageDuration = ChronoUnit.DAYS.between(stock.getDatetime(), Instant.now().plusSeconds(10800));
-            if (storageDuration >= 1) stock.setQuantity(stock.getQuantity() - (stock.getEvaporationRate() * storageDuration));
-        }
-        return allStocks;
+        return stockService.findAllByStationId(stationId);
     }
 
     public StockMove getById(Integer id) {
@@ -95,7 +90,7 @@ public class StockMoveService {
     }
 
     public StockMove save(StockMove toSave) {
-        Stock lastStock = stockService.findAllByStationAndProduct(toSave.getStation().getId(), toSave.getProduct().getId());
+        Stock lastStock = stockService.getByStationAndProduct(toSave.getStation().getId(), toSave.getProduct().getId());
         Double productPrice = productService.getById(toSave.getProduct().getId()).getPrice();
 
         switch (toSave.getType()) {
@@ -123,17 +118,21 @@ public class StockMoveService {
     }
 
     private Map<String, Object> updateMapResult(Stock stock, StockMove stockMove, Map<String, Object> map) {
+        Stock stockUpdate = addEvaporationRate(stock, stockService.getByFirstUpdate(stock.getStation().getId(), stock.getProduct().getId()));
         switch (stockMove.getType()) {
             case "entry":
                 switch (stockMove.getProduct().getId()) {
                     case 1:
                         map.replace("Qte Ajout Essence", stockMove.getAmount());
+                        map.replace("Qte Restante Essence", stockUpdate.getQuantity());
                         break;
                     case 2:
                         map.replace("Qte Ajout Gasoil", stockMove.getAmount());
+                        map.replace("Qte Restante Gasoil", stockUpdate.getQuantity());
                         break;
                     case 3:
                         map.replace("Qte Ajout Pretrol", stockMove.getAmount());
+                        map.replace("Qte Restante Pretrol", stockUpdate.getQuantity());
                         break;
                 }
                 break;
@@ -142,26 +141,17 @@ public class StockMoveService {
                 switch (stockMove.getProduct().getId()) {
                     case 1:
                         map.replace("Qte Vendue Essence", stockMove.getAmount());
+                        map.replace("Qte Restante Essence", stockUpdate.getQuantity() - stockMove.getAmount());
                         break;
                     case 2:
                         map.replace("Qte Vendue Gasoil", stockMove.getAmount());
+                        map.replace("Qte Restante Gasoil", stockUpdate.getQuantity() - stockMove.getAmount());
                         break;
                     case 3:
                         map.replace("Qte Vendue Pretrol", stockMove.getAmount());
+                        map.replace("Qte Restante Pretrol", stockUpdate.getQuantity() - stockMove.getAmount());
                         break;
                 }
-                break;
-        }
-
-        switch (stockMove.getProduct().getId()) {
-            case 1:
-                map.replace("Qte Restante Essence", stock.getQuantity());
-                break;
-            case 2:
-                map.replace("Qte Restante Gasoil",stock.getQuantity());
-                break;
-            case 3:
-                map.replace("Qte Restante Pretrol", stock.getQuantity());
                 break;
         }
         return map;
@@ -175,9 +165,15 @@ public class StockMoveService {
 
     private boolean isEqualsDate(Instant first, Instant second) {
         ZoneId zoneId = ZoneId.of("UTC");
-        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, zoneId).truncatedTo(ChronoUnit.SECONDS);
-        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, zoneId).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, zoneId).truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, zoneId).truncatedTo(ChronoUnit.MINUTES);
         return firstTruncated.equals(secondTruncated);
+    }
+
+    private Stock addEvaporationRate(Stock stockNow, Stock lastStock) {
+        long storageDuration = ChronoUnit.DAYS.between(lastStock.getDatetime(), stockNow.getDatetime().plusSeconds(10800));
+        if (storageDuration >= 1) stockNow.setQuantity(stockNow.getQuantity() - (stockNow.getEvaporationRate() * storageDuration));
+        return stockNow;
     }
 
 }

@@ -30,7 +30,11 @@ public class StockService {
         return repository.findAll(stationId);
     }
 
-    public Stock findAllByStationAndProduct(Integer stationId, Integer productId) {
-        return repository.findAllByStationAndProduct(stationId, productId);
+    public Stock getByStationAndProduct(Integer stationId, Integer productId) {
+        return repository.findByStationAndProduct(stationId, productId, "DESC");
+    }
+
+    public Stock getByFirstUpdate(Integer stationId, Integer productId) {
+        return repository.findByStationAndProduct(stationId, productId, "ASC");
     }
 }
