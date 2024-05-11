@@ -8,7 +8,7 @@ RUN ["chmod", "+x", "app.jar"]
 
 EXPOSE 8080
 
-FROM postgres:16
+FROM postgres
 
 # Your Spring Boot application service definition
 FROM base
