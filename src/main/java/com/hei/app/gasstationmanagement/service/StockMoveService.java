@@ -68,7 +68,7 @@ public class StockMoveService {
         List<Map<String, Object>> respones = new ArrayList<>();
 
         for (Station station : allStations) {
-            Map<String, Object> result = new HashMap<>();
+            Map<String, Object> result = new LinkedHashMap<>();
 
             for (StockMove move : allStockMoves) {
                 List<Map<String, Object>> allList = getAllByStationId(station.getId(), null, null);
@@ -102,13 +102,15 @@ public class StockMoveService {
                     }
                 }
                 result.put("Qte Vendue Essence", essenceQte);
-                result.put("Qte Vendue Gasoil", gasoilQte);
-                result.put("Qte Vendue Pretrol", petrolQte);
-                
                 result.put("Montant essence", productService.getById(1).getPrice() * essenceQte);
+                result.put("Qte Vendue Gasoil", gasoilQte);
                 result.put("Montant gasoil", productService.getById(2).getPrice() * gasoilQte);
+                result.put("Qte Vendue Pretrol", petrolQte);
                 result.put("Montant petrol", productService.getById(3).getPrice() * petrolQte);
-
+                result.put("Montant total de la station", 
+                    (productService.getById(1).getPrice() * essenceQte) + 
+                    (productService.getById(2).getPrice() * gasoilQte) + 
+                    (productService.getById(3).getPrice() * petrolQte));
                 result.put("Qte Restante Essence", essenceRestant);
                 result.put("Qte Restante Gasoil", gasoilRestant);
                 result.put("Qte Restante Pretrol", petrolRestant);
