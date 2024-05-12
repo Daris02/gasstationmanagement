@@ -15,30 +15,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class StockMoveController {
     private final StockMoveService service;
 
-    @GetMapping( "/{stationId}")
-    public Object getAll(
-            @PathVariable("stationId") Integer stationId,
-            @RequestParam(value = "startDate", required = false) String startDate,
-            @RequestParam(value = "endDate", required = false) String endDate
-    ) {
-        return service.getAllWithDate(stationId, startDate, endDate);
+    @GetMapping({"", "/"})
+    public Object getAll() {
+        return service.getAll();
     }
 
-    @GetMapping( "/simple/{stationId}")
-    public Object getAll(
-            @PathVariable("stationId") Integer stationId
-    ) {
-        return service.getAllStockMoves(stationId);
+    @GetMapping( "/{stockeMoveId}")
+    public Object getById(@PathVariable("stockeMoveId") Integer stockeMoveId) {
+        return service.getById(stockeMoveId);
     }
 
     @PostMapping({"", "/"})
     public StockMove create(@RequestBody StockMove stockMove) {
         return service.save(stockMove);
     }
+    
+    @GetMapping( "/tableview/{stationId}")
+    public Object getAll(
+            @PathVariable("stationId") Integer stationId
+    ) {
+        return service.getAllStockMoves(stationId);
+    }
+    
+    @GetMapping( "/station/{stationId}")
+    public Object getAllByStationIdWithDetails(
+            @PathVariable("stationId") Integer stationId,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate
+    ) {
+        return service.getAllByStationId(stationId, startDate, endDate);
+    }
 
-    @GetMapping({"", "/"})
-    public Object getAllMoving() {
-        return service.getAll();
+    @GetMapping("/globalview")
+    public Object getAllGlobalView() {
+        return service.getAllGlobalView();
     }
     
 }

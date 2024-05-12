@@ -26,7 +26,43 @@ public class StockMoveService {
     private final ProductService productService;
     private final StationService stationService;
 
-    public Object getAll() {
+    public List<StockMove> getAll() {
+        return repository.findAll();
+    }
+
+    public StockMove getById(Integer id) {
+        return repository.getById(id);
+    }
+
+    public StockMove save(StockMove toSave) {
+        Stock lastStock = stockService.getByStationAndProduct(toSave.getStation().getId(), toSave.getProduct().getId());
+        Double productPrice = productService.getById(toSave.getProduct().getId()).getPrice();
+
+        switch (toSave.getType()) {
+            // -- -- SUPPLY
+            case "entry":
+                lastStock.setQuantity(lastStock.getQuantity() + toSave.getAmount());
+                stockService.save(lastStock);
+                break;
+            // -- -- SALE
+            case "out":
+                if (toSave.getIsMoney()) {
+                    double amount = toSave.getAmount() /productPrice;
+                    toSave.setAmount((Math.round(amount * 100) / 100.0));
+                }
+                if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < DefaultValue.QUANTITY_MAX) {
+                    lastStock.setQuantity(lastStock.getQuantity() - toSave.getAmount());
+                } else {
+                    throw new QuantityExcessExcpetion("Stock not enough");
+                }
+                stockService.save(lastStock);
+                break;
+        }
+        toSave.setDatetime(Instant.now());
+        return repository.save(toSave);
+    }
+
+    public List<Map<String, Object>> getAllGlobalView() {
         List<Station> allStations = stationService.getAll();
         List<StockMove> allStockMoves = repository.findAll();
         List<Map<String, Object>> respones = new ArrayList<>();
@@ -35,7 +71,7 @@ public class StockMoveService {
             Map<String, Object> result = new HashMap<>();
 
             for (StockMove move : allStockMoves) {
-                List<Map<String, Object>> allList = getAllWithDate(station.getId(), null, null);
+                List<Map<String, Object>> allList = getAllByStationId(station.getId(), null, null);
                 Double essenceQte = 0.0;
                 Double gasoilQte = 0.0;
                 Double petrolQte = 0.0;
@@ -82,7 +118,7 @@ public class StockMoveService {
         return respones;
     }
 
-    public List<Map<String, Object>> getAllWithDate(Integer stationId, String startDate, String endDate) {
+    public List<Map<String, Object>> getAllByStationId(Integer stationId, String startDate, String endDate) {
         List<StockMove> allStockMove = repository.findAll(stationId);
         List<StockMove> filteredStockMoves = new ArrayList<>();
         List<Stock> allStocks = getAllStocks(stationId);
@@ -112,6 +148,10 @@ public class StockMoveService {
         return response;
     }
 
+    private List<Stock> getAllStocks(Integer stationId) {
+        return stockService.findAllByStationId(stationId);
+    }
+
     private List<Map<String, Object>> getAllStockMovesWithDate(List<StockMove> stockMoves, List<Stock> allStocks) {
         List<Map<String, Object>> response = new ArrayList<>();
         for (StockMove stockMove : stockMoves) {
@@ -139,42 +179,6 @@ public class StockMoveService {
             }
         }
         return response;
-    }
-
-    private List<Stock> getAllStocks(Integer stationId) {
-        return stockService.findAllByStationId(stationId);
-    }
-
-    public StockMove getById(Integer id) {
-        return repository.getById(id);
-    }
-
-    public StockMove save(StockMove toSave) {
-        Stock lastStock = stockService.getByStationAndProduct(toSave.getStation().getId(), toSave.getProduct().getId());
-        Double productPrice = productService.getById(toSave.getProduct().getId()).getPrice();
-
-        switch (toSave.getType()) {
-            // -- -- SUPPLY
-            case "entry":
-                lastStock.setQuantity(lastStock.getQuantity() + toSave.getAmount());
-                stockService.save(lastStock);
-                break;
-            // -- -- SALE
-            case "out":
-                if (toSave.getIsMoney()) {
-                    double amount = toSave.getAmount() /productPrice;
-                    toSave.setAmount((Math.round(amount * 100) / 100.0));
-                }
-                if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < DefaultValue.QUANTITY_MAX) {
-                    lastStock.setQuantity(lastStock.getQuantity() - toSave.getAmount());
-                } else {
-                    throw new QuantityExcessExcpetion("Stock not enough");
-                }
-                stockService.save(lastStock);
-                break;
-        }
-        toSave.setDatetime(Instant.now());
-        return repository.save(toSave);
     }
 
     private Map<String, Object> updateMapResult(Stock stock, StockMove stockMove, Map<String, Object> map) {
