@@ -53,7 +53,7 @@ public class StockMoveService {
                 if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < DefaultValue.QUANTITY_MAX) {
                     lastStock.setQuantity(lastStock.getQuantity() - toSave.getAmount());
                 } else {
-                    throw new QuantityExcessExcpetion("Stock not enough");
+                    throw new QuantityExcessExcpetion("Amount is not allowed to exceed quantity limit (<200L)");
                 }
                 stockService.save(lastStock);
                 break;
@@ -80,11 +80,7 @@ public class StockMoveService {
                 Double petrolRestant = 0.0;
                 Product product = move.getProduct();
 
-                result.put("ID Station", move.getStation().getId());
-                result.put("Montant essence", productService.getById(1).getPrice());
-                result.put("Montant gasoil", productService.getById(2).getPrice());
-                result.put("Montant petrol", productService.getById(3).getPrice());
-                
+                result.put("ID Station", move.getStation().getId());                
                 for (Map<String , Object> obj : allList) {
                     switch (product.getId()) {
                         case 1:
@@ -108,6 +104,10 @@ public class StockMoveService {
                 result.put("Qte Vendue Essence", essenceQte);
                 result.put("Qte Vendue Gasoil", gasoilQte);
                 result.put("Qte Vendue Pretrol", petrolQte);
+                
+                result.put("Montant essence", productService.getById(1).getPrice() * essenceQte);
+                result.put("Montant gasoil", productService.getById(2).getPrice() * gasoilQte);
+                result.put("Montant petrol", productService.getById(3).getPrice() * petrolQte);
 
                 result.put("Qte Restante Essence", essenceRestant);
                 result.put("Qte Restante Gasoil", gasoilRestant);
@@ -182,7 +182,8 @@ public class StockMoveService {
     }
 
     private Map<String, Object> updateMapResult(Stock stock, StockMove stockMove, Map<String, Object> map) {
-        Stock stockUpdate = addEvaporationRate(stock, stockService.getByFirstUpdate(stock.getStation().getId(), stock.getProduct().getId()));
+        StockMove lastStockMoveEntry = repository.getLastEntryByStationAndProduct(stockMove.getStation().getId(), stockMove.getProduct().getId());
+        Stock stockUpdate = addEvaporationRate(stock, stockService.getLastUpdate(stock.getStation().getId(), stock.getProduct().getId(), lastStockMoveEntry.getDatetime()));
         switch (stockMove.getType()) {
             case "entry":
                 switch (stockMove.getProduct().getId()) {

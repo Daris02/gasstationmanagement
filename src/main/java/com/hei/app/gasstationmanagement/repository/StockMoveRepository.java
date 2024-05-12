@@ -101,4 +101,40 @@ public class StockMoveRepository extends AutoCRUD<StockMove, Integer> {
             }
         }
     }
+
+    public StockMove getLastEntryByStationAndProduct(Integer stationId, Integer productId) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        StockMove stockMove = null;
+
+        try {
+            connection = ConnectionDB.createConnection();
+            statement = connection.createStatement();
+
+            String selectQuery = "SELECT * FROM \"stockmove\"" +
+                    "WHERE stationid = " + stationId + " " +
+                    "AND productid = " + productId + " " +
+                    "AND type = 'entry' " +
+                    "ORDER BY datetime DESC " +
+                    "LIMIT 1 ;";
+            resultSet = statement.executeQuery(selectQuery);
+
+            while (resultSet.next()) {
+                stockMove = mapResultSetToEntity(resultSet);
+            }
+            return stockMove;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

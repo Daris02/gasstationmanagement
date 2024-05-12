@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
         }
     }
 
-    public Stock findByStationAndProduct(Integer stationId, Integer productId, String typeView) {
+    public Stock findByStationAndProduct(Integer stationId, Integer productId) {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -82,7 +83,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
             String selectQuery = "SELECT * FROM \"stock\"" +
                     "WHERE productid = " + productId + " " +
                     "AND stationid = " + stationId + " " +
-                    "ORDER BY datetime " + typeView + " " +
+                    "ORDER BY datetime ASC " +
                     "LIMIT 1 ;";
 
             resultSet = statement.executeQuery(selectQuery);
@@ -124,6 +125,42 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
                 stocks.add(mapResultSetToEntity(resultSet));
             }
             return stocks;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public Stock findLastUpdateEntry(Integer stationId, Integer productId, Instant instant) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = ConnectionDB.createConnection();
+            statement = connection.createStatement();
+
+            String selectQuery = "SELECT * FROM \"stock\"" +
+                    "WHERE productid = " + productId + " " +
+                    "AND stationid = " + stationId + " " +
+                    "ORDER BY datetime = '" + instant + "' ASC " +
+                    "LIMIT 1 ;";
+
+            resultSet = statement.executeQuery(selectQuery);
+            Stock responseSQL = null;
+
+            while (resultSet.next()) {
+                responseSQL = mapResultSetToEntity(resultSet);
+            }
+            return responseSQL;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
