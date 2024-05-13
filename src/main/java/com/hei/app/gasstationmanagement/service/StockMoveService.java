@@ -1,7 +1,6 @@
 package com.hei.app.gasstationmanagement.service;
 
 import com.hei.app.gasstationmanagement.Exception.QuantityExcessExcpetion;
-import com.hei.app.gasstationmanagement.config.DefaultValue;
 import com.hei.app.gasstationmanagement.model.Entity.Product;
 import com.hei.app.gasstationmanagement.model.Entity.Station;
 import com.hei.app.gasstationmanagement.model.Entity.Stock;
@@ -25,6 +24,7 @@ public class StockMoveService {
     private final StockService stockService;
     private final ProductService productService;
     private final StationService stationService;
+    private final static double QUANTITY_MAX = 200;
 
     public List<StockMove> getAll() {
         return repository.findAll();
@@ -50,7 +50,7 @@ public class StockMoveService {
                     double amount = toSave.getAmount() /productPrice;
                     toSave.setAmount((Math.round(amount * 100) / 100.0));
                 }
-                if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < DefaultValue.QUANTITY_MAX) {
+                if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < QUANTITY_MAX) {
                     lastStock.setQuantity(lastStock.getQuantity() - toSave.getAmount());
                 } else {
                     throw new QuantityExcessExcpetion("Amount is not allowed to exceed quantity limit (<200L)");
