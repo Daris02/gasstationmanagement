@@ -37,7 +37,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
                     stationService.getById(resultSet.getInt("stationId")),
                     productService.getById(resultSet.getInt("productId")),
                     resultSet.getDouble("quantity"),
-                    resultSet.getTimestamp("datetime").toInstant(),
+                    resultSet.getTimestamp("datetime").toInstant().minusSeconds(3600),
                     resultSet.getDouble("evaporationRate")
             );
         } catch (SQLException e) {
@@ -150,7 +150,8 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
             String selectQuery = "SELECT * FROM \"stock\"" +
                     "WHERE productid = " + productId + " " +
                     "AND stationid = " + stationId + " " +
-                    "ORDER BY datetime = '" + instant + "' ASC " +
+                    "AND datetime >= '" + instant + "' " +
+                    "ORDER BY datetime ASC " +
                     "LIMIT 1 ;";
 
             resultSet = statement.executeQuery(selectQuery);

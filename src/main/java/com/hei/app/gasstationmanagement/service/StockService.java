@@ -41,6 +41,7 @@ public class StockService {
     }
 
     public Stock getLastUpdate(Integer stationId, Integer productId, Instant instant) {
-        return repository.findLastUpdateEntry(stationId, productId, instant);
+        Stock stock = repository.findLastUpdateEntry(stationId, productId, instant.minusSeconds(14400));
+        return stock;
     }
 }
