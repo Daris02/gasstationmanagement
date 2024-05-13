@@ -83,7 +83,7 @@ public class StockRepository extends AutoCRUD<Stock, Integer> {
             String selectQuery = "SELECT * FROM \"stock\"" +
                     "WHERE productid = " + productId + " " +
                     "AND stationid = " + stationId + " " +
-                    "ORDER BY datetime ASC " +
+                    "ORDER BY datetime DESC " +
                     "LIMIT 1 ;";
 
             resultSet = statement.executeQuery(selectQuery);
