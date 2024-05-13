@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +25,11 @@ public class StockService {
 
     public Stock save(Stock toSave) {
         toSave.setDatetime(Instant.now());
-        return repository.save(toSave);
+        repository.save(toSave);
+        Optional<Stock> stock = repository.findAll().stream()
+                .max(Comparator.comparingInt(Stock::getId))
+                .stream().findFirst();
+        return stock.orElse(toSave);
     }
 
     public List<Stock> findAllByStationId(Integer stationId) {

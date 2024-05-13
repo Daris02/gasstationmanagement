@@ -41,8 +41,14 @@ public class StockMoveService {
         switch (toSave.getType()) {
             // -- -- SUPPLY
             case "entry":
-                lastStock.setQuantity(lastStock.getQuantity() + toSave.getAmount());
-                stockService.save(lastStock);
+                Stock newStock = new Stock();
+                newStock.setProduct(toSave.getProduct());
+                newStock.setStation(toSave.getStation());
+                newStock.setQuantity(toSave.getAmount());
+                newStock.setEvaporationRate(generateEvaporationRate(newStock.getProduct().getId()));
+                if (lastStock != null) newStock.setQuantity(lastStock.getQuantity() + toSave.getAmount());
+                stockService.save(newStock);
+                toSave.setIsMoney(false);
                 break;
             // -- -- SALE
             case "out":
@@ -53,13 +59,17 @@ public class StockMoveService {
                 if (lastStock.getQuantity() > toSave.getAmount() && toSave.getAmount() < QUANTITY_MAX) {
                     lastStock.setQuantity(lastStock.getQuantity() - toSave.getAmount());
                 } else {
-                    throw new QuantityExcessExcpetion("Amount is not allowed to exceed quantity limit (<200L)");
+                    throw new QuantityExcessExcpetion("Amount is not allowed to exceed quantity limit (<200L) or Quantity not enough");
                 }
                 stockService.save(lastStock);
                 break;
         }
         toSave.setDatetime(Instant.now());
-        return repository.save(toSave);
+        repository.save(toSave);
+        Optional<StockMove> stockMove = repository.findAll().stream()
+                .max(Comparator.comparingInt(StockMove::getId))
+                .stream().findFirst();
+        return stockMove.orElse(toSave);
     }
 
     public List<Map<String, Object>> getAllGlobalView() {
@@ -250,4 +260,11 @@ public class StockMoveService {
         return stockNow;
     }
 
+    private Double generateEvaporationRate(Integer idProduct) {
+        return switch (idProduct) {
+            case 1 -> 100.0;
+            case 2 -> 50.0;
+            default -> 10.0;
+        };
+    }
 }

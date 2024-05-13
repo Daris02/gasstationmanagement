@@ -23,7 +23,12 @@ public class ProductService {
     }
 
     public Product save(Product toSave) {
-        return repository.save(toSave);
+        repository.save(toSave);
+        List<Product> products = getAll();
+        for (Product product : products) {
+            if (product.getName().equals(toSave.getName())) return product;
+        }
+        return toSave;
     }
 
     public List<Product> getAllByStationId(Integer id) {
