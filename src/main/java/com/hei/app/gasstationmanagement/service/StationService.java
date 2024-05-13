@@ -30,7 +30,6 @@ public class StationService {
         Station station = repository.getById(id);
         if (station == null) return null;
         List<Product> allProduct = productService.getAllByStationId(station.getId());
-        if (allProduct.isEmpty()) station.setProducts(List.of());
         station.setProducts(allProduct);
         return station;
     }

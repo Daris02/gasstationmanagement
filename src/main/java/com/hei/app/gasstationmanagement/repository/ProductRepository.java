@@ -9,8 +9,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Repository
 public class ProductRepository extends AutoCRUD<Product, Integer> {
@@ -32,11 +32,11 @@ public class ProductRepository extends AutoCRUD<Product, Integer> {
         }
     }
 
-    public List<Product> findAllByStationId(Integer id) {
+    public Set<Product> findAllByStationId(Integer id) {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
-        List<Product> listAll = new ArrayList<>();
+        Set<Product> listAll = new HashSet<>();
         String query = "SELECT p.* FROM \"product\" p INNER JOIN \"stock\" s ON s.productId = p.id WHERE s.stationId = '" + id + "';";
 
         try {
