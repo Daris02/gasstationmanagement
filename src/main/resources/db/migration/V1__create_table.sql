@@ -39,15 +39,10 @@ CREATE TABLE "stock" (
 );
 
 -- -- ADD DEFAULT VALUE
-INSERT INTO "station" VALUES
-    (1, 'station1');
+INSERT INTO "station" (location) VALUES
+    ('station1');
 
 INSERT INTO "product" (name, price) VALUES
     ('essence', 5900),  -- id.1
     ('gasoil', 4900),   -- id.2
     ('petrol', 2130);   -- id.3
-
-INSERT INTO "stock" (stationId, quantity, evaporationRate, productId) VALUES
-    (1, 0, 100, 1),
-    (1, 0, 50, 2),
-    (1, 0, 10, 3);
