@@ -167,11 +167,10 @@ public class StockMoveService {
     private List<Map<String, Object>> getAllStockMovesWtihMapResult(List<StockMove> stockMoves, List<Stock> allStocks) {
         List<Map<String, Object>> response = new ArrayList<>();
         for (StockMove stockMove : stockMoves) {
-            Map<String, Object> result = new HashMap<>();
+            Map<String, Object> result = new LinkedHashMap<>();
             Optional<Stock> matchingStock = allStocks.stream()
                     .filter(s -> isEqualsDate(s.getDatetime(), stockMove.getDatetime()))
                     .findFirst();
-
             if (matchingStock.isPresent()) {
                 Stock stock = matchingStock.get();
                 result.put("id", stockMove.getId());
@@ -249,15 +248,18 @@ public class StockMoveService {
 
     private boolean isEqualsDate(Instant first, Instant second) {
         ZoneId zoneId = ZoneId.of("UTC");
-        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, zoneId).truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, zoneId).truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, zoneId).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, zoneId).truncatedTo(ChronoUnit.SECONDS);
         return firstTruncated.equals(secondTruncated);
     }
 
     private Stock addEvaporationRate(Stock stockNow, Stock lastStock) {
-        long storageDuration = ChronoUnit.DAYS.between(lastStock.getDatetime(), stockNow.getDatetime().plusSeconds(10800));
-        if (storageDuration >= 1) stockNow.setQuantity(stockNow.getQuantity() - (stockNow.getEvaporationRate() * storageDuration));
-        return stockNow;
+        long storageDuration = ChronoUnit.DAYS.between(lastStock.getDatetime(), stockNow.getDatetime());
+        if (storageDuration >= 1) {
+            stockNow.setQuantity(stockNow.getQuantity() - (stockNow.getEvaporationRate() * storageDuration));
+            return stockNow;
+        }
+        return lastStock;
     }
 
     private Double generateEvaporationRate(Integer idProduct) {
