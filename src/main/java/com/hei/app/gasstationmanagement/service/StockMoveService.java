@@ -25,6 +25,7 @@ public class StockMoveService {
     private final ProductService productService;
     private final StationService stationService;
     private final static double QUANTITY_MAX = 200;
+    private final ZoneId ZONEID = ZoneId.systemDefault();
 
     public List<StockMove> getAll() {
         return repository.findAll();
@@ -242,14 +243,13 @@ public class StockMoveService {
 
     private String dateFormatter(Instant instant) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZONEID);
         return dateTime.format(formatter);
     }
 
     private boolean isEqualsDate(Instant first, Instant second) {
-        ZoneId zoneId = ZoneId.of("UTC");
-        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, zoneId).truncatedTo(ChronoUnit.SECONDS);
-        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, zoneId).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime firstTruncated = LocalDateTime.ofInstant(first, ZONEID).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime secondTruncated = LocalDateTime.ofInstant(second, ZONEID).truncatedTo(ChronoUnit.SECONDS);
         return firstTruncated.equals(secondTruncated);
     }
 
@@ -266,7 +266,8 @@ public class StockMoveService {
         return switch (idProduct) {
             case 1 -> 100.0;
             case 2 -> 50.0;
-            default -> 10.0;
+            case 3 -> 10.0;
+            default -> throw new RuntimeException("value not attribued to product");
         };
     }
 }
