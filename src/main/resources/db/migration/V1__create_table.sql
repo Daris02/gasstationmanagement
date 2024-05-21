@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS "stockmove";
 
 CREATE TABLE IF NOT EXISTS "stockmove" (
     id SERIAL PRIMARY KEY,
-    type VARCHAR(5) CHECK (type = 'entry' or type = 'out'),
+    type VARCHAR(5) CHECK (type = 'ENTRY' or type = 'OUT'),
     amount DOUBLE PRECISION,
     datetime TIMESTAMP DEFAULT current_timestamp,
     isMoney BOOLEAN NOT NULL DEFAULT false,

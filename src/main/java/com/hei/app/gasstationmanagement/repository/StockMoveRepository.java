@@ -3,6 +3,7 @@ package com.hei.app.gasstationmanagement.repository;
 import com.hei.app.gasstationmanagement.config.ConnectionDB;
 import com.hei.app.gasstationmanagement.model.AutoCRUD;
 import com.hei.app.gasstationmanagement.model.Entity.StockMove;
+import com.hei.app.gasstationmanagement.model.MoveType;
 import com.hei.app.gasstationmanagement.service.ProductService;
 import com.hei.app.gasstationmanagement.service.StationService;
 
@@ -33,7 +34,7 @@ public class StockMoveRepository extends AutoCRUD<StockMove, Integer> {
         try {
             return new StockMove(
                     resultSet.getInt("id"),
-                    resultSet.getString("type"),
+                    MoveType.valueOf(resultSet.getString("type")),
                     resultSet.getDouble("amount"),
                     resultSet.getTimestamp("datetime").toInstant().minusSeconds(3600),
                     resultSet.getBoolean("ismoney"),
@@ -115,7 +116,7 @@ public class StockMoveRepository extends AutoCRUD<StockMove, Integer> {
             String selectQuery = "SELECT * FROM \"stockmove\"" +
                     "WHERE stationid = " + stationId + " " +
                     "AND productid = " + productId + " " +
-                    "AND type = 'entry' " +
+                    "AND type = 'ENTRY' " +
                     "ORDER BY datetime DESC " +
                     "LIMIT 1 ;";
             resultSet = statement.executeQuery(selectQuery);

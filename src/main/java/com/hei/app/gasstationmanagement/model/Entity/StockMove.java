@@ -2,6 +2,7 @@ package com.hei.app.gasstationmanagement.model.Entity;
 
 import java.time.Instant;
 
+import com.hei.app.gasstationmanagement.model.MoveType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StockMove {
     private Integer id;
-    private String type;
+    private MoveType type;
     private Double amount;
     private Instant datetime;
     private Boolean isMoney;

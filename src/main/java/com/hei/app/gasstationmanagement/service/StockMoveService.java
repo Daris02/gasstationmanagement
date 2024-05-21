@@ -41,7 +41,7 @@ public class StockMoveService {
 
         switch (toSave.getType()) {
             // -- -- SUPPLY
-            case "entry":
+            case ENTRY:
                 Stock newStock = new Stock();
                 newStock.setProduct(toSave.getProduct());
                 newStock.setStation(toSave.getStation());
@@ -52,7 +52,7 @@ public class StockMoveService {
                 toSave.setIsMoney(false);
                 break;
             // -- -- SALE
-            case "out":
+            case OUT:
                 if (toSave.getIsMoney()) {
                     double amount = toSave.getAmount() /productPrice;
                     toSave.setAmount((Math.round(amount * 100) / 100.0));
@@ -106,7 +106,7 @@ public class StockMoveService {
                             petrolQte += amountConverter(move, (Double) obj.get("Qte Vendue Petrol"), product.getPrice());
                             break;
                     }
-                    if (obj==allList.get(allList.size()-1)) {
+                    if (obj==allList.getLast()) {
                         essenceRestant = (Double) obj.get("Qte Restante Essence");
                         gasoilRestant = (Double) obj.get("Qte Restante Gasoil");
                         petrolRestant = (Double) obj.get("Qte Restante Petrol");
@@ -197,7 +197,7 @@ public class StockMoveService {
         StockMove lastStockMoveEntry = repository.getLastEntryByStationAndProduct(stockMove.getStation().getId(), stockMove.getProduct().getId());
         Stock stockUpdate = addEvaporationRate(stock, stockService.getLastUpdate(stock.getStation().getId(), stock.getProduct().getId(), lastStockMoveEntry.getDatetime()));
         switch (stockMove.getType()) {
-            case "entry":
+            case ENTRY:
                 switch (stockMove.getProduct().getName()) {
                     case "essence":
                         map.replace("Qte Ajout Essence", stockMove.getAmount());
@@ -214,7 +214,7 @@ public class StockMoveService {
                 }
                 break;
 
-            case "out":
+            case OUT:
                 switch (stockMove.getProduct().getName()) {
                     case "essence":
                         map.replace("Qte Vendue Essence", stockMove.getAmount());
